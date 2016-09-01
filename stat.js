@@ -1,5 +1,4 @@
 var argv = require('minimist')(process.argv.slice(2));
-var readline = require('linebyline');
 
 if (argv._[0]) {
   var logFile = argv._[0];
@@ -8,7 +7,8 @@ if (argv._[0]) {
   return;
 }
 
-var rl = readline(logFile);
+var readline = require('linebyline'),
+    rl = readline(logFile);
 
 var totalWins = 0;
 var totalFails = 0;
