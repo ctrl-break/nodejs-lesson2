@@ -1,12 +1,12 @@
 'use strict';
 console.log('\x1Bc');
 
-var cards = require('french-deck');
-var readline = require('readline');
-var inarray = require('inarray');
-var clc = require('cli-color');
-var argv = require('minimist')(process.argv.slice(2));
-var fs = require('fs');
+const cards = require('french-deck');
+const readline = require('readline');
+const inarray = require('inarray');
+const clc = require('cli-color');
+const argv = require('minimist')(process.argv.slice(2));
+const fs = require('fs');
 
 
 const red = clc.red.bold;
@@ -80,46 +80,50 @@ const dealerWork = () => {
 }
 
 //make log file
-
-
 if (argv._[0]) {
   var logFile = argv._[0];
   fs.stat(logFile, function (err, file) {
-    if (err != null)
+    if (err != null) {
         fs.writeFile(logFile, '', function(err) {
-          if (err)
-            throw err;
-          });
+          if (err) throw err;
+        });
+    };
   });
+  var needLog = true;
+} else {
+  var logFile = "";
+  var needLog = false;
+}
+
+const writeLog = (roundResult) => {
+      fs.appendFile(logFile, roundResult + "\n", function(err) {
+        if (err) throw err;
+      });
 };
 
-const writeLog = (roundResult) =>{
-  fs.appendFile(logFile, roundResult + "\n", function(err) {
-    if (err)
-      throw err;
-  });
-}
 
 //Prepare for game
 let exit = ['Exit', 'exit', 'e', 'E'];
 let deal = ['Deal', 'deal', 'd', 'D'];
 let check = ['Check', 'check', 'c', 'C'];
-var deck = new cards.Deck({
+let deck = new cards.Deck({
     jokers: 0,
     decks: 1
 });
 deck.shuffle();
-
 
 let rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
-let hands = newRound();
+
+// Game
+let hands = newRound(); // hands[0] - dealer cards, hands[1] - player cards
 
 rl.on('line', function(cmd) {
 
+    let result = '';
     if (deck._undealt.length <= 4) {
         console.log("Deck is empty. Take new deck.\n");
         deck.reset();
@@ -137,10 +141,10 @@ rl.on('line', function(cmd) {
         console.log(printCurrentState(hands));
         if ( getSummaryScores( hands[1] ) > 21 ){
           console.log(red("You fail!\n"));
-          writeLog('fail');
+          result = 'fail';
           hands = newRound();
+          if (needLog) writeLog(result);
         }
-        return;
     };
 
     if ( inarray(check, cmd) ) {
@@ -153,22 +157,23 @@ rl.on('line', function(cmd) {
 
         if ( dealer > 21 ) {
           console.log(green("You WIN!\n"));
-          writeLog('win');
+          result = 'win';
         } else if ( dealer > player ) {
           console.log(red("You fail!\n"));
-          writeLog('fail');
+          result = 'fail';
         } else if (dealer < player) {
           console.log(green("You WIN!\n"));
-          writeLog('win');
+          result = 'win';
         } else {
           console.log("Stay.\n");
-          writeLog('stay');
+          result = 'stay';
         }
 
+        if (needLog) writeLog(result);
         hands = newRound();
-
-        return;
     };
+
+    return;
 
   }
 );
