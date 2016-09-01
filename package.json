@@ -18,6 +18,7 @@
   "dependencies": {
     "french-deck" : "*",
     "readline" : "*",
-    "inarray" : "*"
+    "inarray" : "*",
+    "cli-color" : "*"
   }
 }
