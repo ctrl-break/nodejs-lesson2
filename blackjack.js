@@ -37,6 +37,7 @@ const printCurrentState = (hands, checkDealer) => {
     if (checkDealer) {
       dealerSum = getSummaryScores(hands[0]);
     };
+
     let dealer = `Dealer - ${dealerSum}\n`;
     if (checkDealer) {
       dealer += prettyPrintCards(hands[0]);
@@ -47,6 +48,24 @@ const printCurrentState = (hands, checkDealer) => {
     player += prettyPrintCards(hands[1]);
 
     return dealer + player;
+}
+
+const dealNewCards = () => {
+  return deck.deal(2, 2);
+}
+
+const newRound = (hands) => {
+  console.log("\n- - - New round - - -\n");
+  hands = dealNewCards();
+  console.log(printCurrentState(hands));
+  console.log("Choose action: deal|d  check|c  exit|e");
+  return hands;
+}
+
+const dealerWork = () => {
+  while ( getSummaryScores(hands[0]) < 17 ) {
+    hands[0].push(deck.draw());
+  }
 }
 
 
@@ -67,11 +86,17 @@ let rl = readline.createInterface({
     output: process.stdout
 });
 
-let hands = deck.deal(2, 2);
-rl.write(printCurrentState(hands));
-rl.write("Choose action: deal|d  check|c  exit|e\n");
+let hands = newRound();
 
 rl.on('line', function(cmd) {
+
+    if (deck._undealt.length <= 4) {
+        console.log("Deck is empty. Take new deck.\n");
+        deck.reset();
+        deck.shuffle();
+        hands = newRound();
+    }
+
     if ( inarray(exit, cmd) ) {
         this.close();
         return;
@@ -80,18 +105,35 @@ rl.on('line', function(cmd) {
     if ( inarray(deal, cmd) ) {
         hands[1].push(deck.draw());
         console.log(printCurrentState(hands));
-        console.log("Choose action: deal|d  check|c  exit|e");
+        if ( getSummaryScores( hands[1] ) > 21 ){
+          console.log("You fail!");
+          hands = newRound();
+        }
         return;
     };
 
     if ( inarray(check, cmd) ) {
         let checkDealer = true;
+        dealerWork();
+
+        let dealer = getSummaryScores( hands[0] );
+        let player = getSummaryScores( hands[1] );
         console.log(printCurrentState(hands, checkDealer));
+
+        if ( dealer > 21 ) {
+          console.log("You WIN!\n");
+        } else if ( dealer > player ) {
+          console.log("You fail!\n");
+        } else if (dealer < player) {
+          console.log("You WIN!\n");
+        } else {
+          console.log("Stay.\n");
+        }
+
+        hands = newRound();
+
         return;
     };
 
   }
 );
-
-
-deck.reset();
