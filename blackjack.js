@@ -5,11 +5,16 @@ var cards = require('french-deck');
 var readline = require('readline');
 var inarray = require('inarray');
 var clc = require('cli-color');
+var argv = require('minimist')(process.argv.slice(2));
+var fs = require('fs');
+
 
 const red = clc.red.bold;
 const yellow = clc.yellow.bold;
 const green = clc.green.bold;
 const magenta = clc.magenta.bold;
+
+
 
 const getCardScore = (card) => {
     if (isNaN(card.rank)) {
@@ -74,6 +79,27 @@ const dealerWork = () => {
   }
 }
 
+//make log file
+
+
+if (argv._[0]) {
+  var logFile = argv._[0];
+  fs.stat(logFile, function (err, file) {
+    if (err != null)
+        fs.writeFile(logFile, '', function(err) {
+          if (err)
+            throw err;
+          });
+  });
+};
+
+const writeLog = (roundResult) =>{
+  fs.appendFile(logFile, roundResult + "\n", function(err) {
+    if (err)
+      throw err;
+  });
+}
+
 //Prepare for game
 let exit = ['Exit', 'exit', 'e', 'E'];
 let deal = ['Deal', 'deal', 'd', 'D'];
@@ -83,6 +109,7 @@ var deck = new cards.Deck({
     decks: 1
 });
 deck.shuffle();
+
 
 let rl = readline.createInterface({
     input: process.stdin,
@@ -110,6 +137,7 @@ rl.on('line', function(cmd) {
         console.log(printCurrentState(hands));
         if ( getSummaryScores( hands[1] ) > 21 ){
           console.log(red("You fail!\n"));
+          writeLog('fail');
           hands = newRound();
         }
         return;
@@ -125,12 +153,16 @@ rl.on('line', function(cmd) {
 
         if ( dealer > 21 ) {
           console.log(green("You WIN!\n"));
+          writeLog('win');
         } else if ( dealer > player ) {
           console.log(red("You fail!\n"));
+          writeLog('fail');
         } else if (dealer < player) {
           console.log(green("You WIN!\n"));
+          writeLog('win');
         } else {
           console.log("Stay.\n");
+          writeLog('stay');
         }
 
         hands = newRound();

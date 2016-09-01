@@ -19,6 +19,7 @@
     "french-deck" : "*",
     "readline" : "*",
     "inarray" : "*",
+    "minimist" : "*",
     "cli-color" : "*"
   }
 }
